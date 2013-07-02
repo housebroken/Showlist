@@ -1,23 +1,24 @@
-#######    Beautiful Soup code    ########
+#!/usr/bin/env python
 
 from bs4 import BeautifulSoup
 import urllib2
 from collections import defaultdict
 import xml.etree.ElementTree
 
-site = 'http://www.showlistaustin.com'
-html_doc = urllib2.urlopen(site)
-soup = BeautifulSoup(html_doc)
-h4 = soup.find_all("h4")
-h4 = h4[6:]
-table = soup.find_all("table")
+def scrape():  # Scrape the data for all h4 and table elements.
+	from bs4 import BeautifulSoup
+	import urllib2
+	html_doc = urllib2.urlopen('http://www.showlistaustin.com')
+	soup = BeautifulSoup(html_doc)
+	h4 = soup.find_all("h4")
+	h4 = h4[6:]
+	table = soup.find_all("table")
+	scrapeddata = [h4, table]
+	return scrapeddata
 
-
-##################  Find all H4 where the dates are stored.#########################
-
-
-def get_dates(h4):
-  dates = []
+def get_dates(scrapeddata):  # Grab the dates from the h4 elements found after scrape.
+	h4 = scrapeddata[0]
+ 	dates = []
 	for i in range(len(h4)):
 		tag = h4[i].find_all("b")
 		for i in range(len(tag)):
@@ -26,11 +27,8 @@ def get_dates(h4):
 	return dates
 
 
-############         Break data into day > event > band     ###################
-
-
-
-def get_events(table):
+def get_events(scrapeddata):  #  Grab the events from the table elements found after scrape.
+	table = scrapeddata[1]
 	events = []
 	rough = []
 	draft = []
@@ -70,8 +68,8 @@ def get_events(table):
 	return new_final
 
 
-##########  Sort the venues     ############
-def get_venue(table):
+def get_venue(scrapeddata):  #  Grab the list of venues where the shows are playing. The venues will match up with the list of events.
+	table = scrapeddata[1]
 	temp = []
 	venues = []
 	for i in range(len(table)):
@@ -85,12 +83,12 @@ def get_venue(table):
 		temp = []
 	return venues
 
-#############    Put venue, date, event together into a single dictionary ##############
-def make_dict():
+
+def make_dict(scrapeddata):  # Make a dictionary key for each artist found on showlist, mapping the date and venue as values.
 	dictionary = defaultdict(list)
-	new_final = get_events(table)
-	dates = get_dates(h4)
-	venue = get_venue(table)
+	new_final = get_events(scrapeddata)
+	dates = get_dates(scrapeddata)
+	venue = get_venue(scrapeddata)
 	event_count = 0
 	day_count = 0
 	for i in range(len(new_final)):
@@ -108,9 +106,8 @@ def make_dict():
 		day_count += 1
 	return dictionary
 
-#########         No problems here          #############
 
-def iTunes():
+def iTunes():  #  Scan iTunes .XML for artists, make a list of all artists.
 	tree = xml.etree.ElementTree.ElementTree() 
 	tree.parse('C:\Users\Brian\Music\iTunes\iTunes Music Library.xml') 
 	doc = tree.getroot()
@@ -127,11 +124,11 @@ def iTunes():
 	  		sets.append(name)
 	return sets
 
-#################################################
 
-def make_list():
+def make_list():  #  Find matches between iTunes artists and Showlist's artists.
+	scrapeddata = scrape()
 	ituneslist = iTunes()
-	dictionary = make_dict()
+	dictionary = make_dict(scrapeddata)
 	matches = defaultdict(list)
 	for i in range(len(ituneslist)):
 		if ituneslist[i] in dictionary:
