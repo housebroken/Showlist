@@ -106,10 +106,24 @@ def make_dict(scrapeddata):  # Make a dictionary key for each artist found on sh
 		day_count += 1
 	return dictionary
 
+def get_itunes_dir():
+  import os
+  try:
+	username = os.environ['USER']
+	itunes_dir = '/Users/{}/Music/iTunes'.format(username)
+  except KeyError:
+	username = os.environ['USERNAME']
+	itunes_dir = r'C:\Users\{}\Music\iTunes'.format(username)
+  return itunes_dir
+
+def get_itunes_xml():
+  import os.path
+  return os.path.join(get_itunes_dir(), 'iTunes Music Library.xml')
+print get_itunes_xml()
 
 def iTunes():  #  Scan iTunes .XML for artists, make a list of all artists.
 	tree = xml.etree.ElementTree.ElementTree() 
-	tree.parse('C:\Users\Brian\Music\iTunes\iTunes Music Library.xml') 
+	tree.parse(get_itunes_xml())
 	doc = tree.getroot()
 	top = doc.find('dict')
 	tracks = top.find('dict')
