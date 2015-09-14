@@ -98,7 +98,7 @@ def make_dict(scrapeddata):  # Make a dictionary key for each artist found on sh
 			for i in range(len(event)):
 				band = event[i]
 				current_venue = venue[day_count][event_count]
-				current_date = dates[day_count]
+				current_date = dates[day_count - 1]
 				dictionary[band].append(current_venue)
 				dictionary[band].append(current_date)
 			event_count += 1
@@ -130,7 +130,7 @@ def iTunes():  #  Scan iTunes .XML for artists, make a list of all artists.
 	sets = []
 	for track in tracks.findall('dict'):
 	  	name = track.findall('string')
-	  	name = name[1].text
+	  	name = name[4].text
 	  	name = name.lower()
 	  	if name in sets:
 	  		pass
